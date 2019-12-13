@@ -1,0 +1,11 @@
+# This file is machine-generated - editing it directly is not advised
+
+[[CRC32c]]
+uuid = "8bf52ea8-c179-5cab-976a-9e18b702a9bc"
+
+[[ProtoBuf]]
+git-tree-sha1 = "50ca0df1127c34598014a238ba66c8717e2a6e4d"
+repo-rev = "master"
+repo-url = "https://github.com/JuliaIO/ProtoBuf.jl"
+uuid = "3349acd9-ac6a-5e09-bcdb-63829b23a429"
+version = "0.8.0"

@@ -1,0 +1,4 @@
+*.sw?
+*.cov
+coverage
+deps/*.log
