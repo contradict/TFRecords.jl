@@ -1,6 +1,6 @@
 module TFRecords
 using ProtoBuf
-using CRC32c
+using CRC32c: crc32c
 
 export TFRecord, Example, SequenceExample, BytesList, FloatList, Int64List
 export Feature, Features, FeatureList, FeatureLists
@@ -26,7 +26,7 @@ end
 # https://www.tensorflow.org/tutorials/load_data/tfrecord#tfrecords_format_details
 masked_crc(crc::UInt32) = ((crc >> 15) | (crc<<17)) + 0xa282ead8
 
-lengthcrc(l::UInt64) = CRC32c.crc32c([x for x in reinterpret(UInt8, [l])])
+lengthcrc(l::UInt64) = crc32c([x for x in reinterpret(UInt8, [l])])
 
 """
     readexample(f)
@@ -40,7 +40,7 @@ function readexample(s::IO)
     @assert(computed_length_crc == length_crc)
 
     data = read(s, length)
-    computed_data_crc = masked_crc(CRC32c.crc32c(data))
+    computed_data_crc = masked_crc(crc32c(data))
 
     data_crc = read(s, UInt32)
     @assert(computed_data_crc == data_crc)
@@ -61,7 +61,7 @@ function writeexample(s::IO, e::Example)
     w = write(s, length)
     w += write(s, masked_crc(lengthcrc(length)))
     w += write(s, iob.data)
-    w += write(s, masked_crc(CRC32c.crc32c(iob.data)))
+    w += write(s, masked_crc(crc32c(iob.data)))
 end
 
 """
