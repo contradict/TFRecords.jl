@@ -2,22 +2,17 @@ module TFRecords
 using ProtoBuf
 using CRC32c: crc32c
 
-export TFRecord, Example, SequenceExample, BytesList, FloatList, Int64List
-export Feature, Features, FeatureList, FeatureLists
-export readexample, writeexample, iterate
+export TFRecord, readexample, writeexample, iterate, parse_example, build_example
 
 # run(ProtoBuf.protoc(`-I=~/src/tensorflow/ --julia_out=src/generated ~/src/tensorflow/tensorflow/core/example/example.proto`))
 include("generated/tensorflow.jl")
 
 Example = tensorflow.Example
-SequenceExample = tensorflow.SequenceExample
+Feature = tensorflow.Feature
+Features = tensorflow.Features
 BytesList = tensorflow.BytesList
 FloatList = tensorflow.FloatList
 Int64List = tensorflow.Int64List
-Feature = tensorflow.Feature
-Features = tensorflow.Features
-FeatureList = tensorflow.FeatureList
-FeatureLists = tensorflow.FeatureLists
 
 struct TFRecord
     filename::String
@@ -93,5 +88,38 @@ function Base.iterate(R::TFRecord, state::Union{Nothing,IO}=nothing)
         end
     end
 end
+
+"""
+    woo(f)
+
+Extract the defined alternative value from the protobuf.
+"""
+function woo(f::Feature)
+    woo = which_oneof(f, :kind)
+    if woo == :bytes_list
+        f.bytes_list.value
+    elseif woo == :int64_list
+        f.int64_list.value
+    elseif woo == :float_list
+        f.float_list.value
+    end
+end
+
+"""
+    parse_example(e)
+
+Convert the ProtoBuf Example into a Dict{String,Array{T, 1}} with an entry for
+each defined feature
+"""
+function parse_example(e::Example)
+    feature_keys = e.features.feature.keys
+    defined_keys = [feature_keys[i] for i in 1:length(feature_keys) if isassigned(feature_keys, i)]
+    Dict(k=>woo(e.features.feature[k]) for k in defined_keys)
+end
+
+make_feature(f::Array{Array{UInt8, 1},1}) = Feature(bytes_list=BytesList(value=f))
+make_feature(f::Array{Int64, 1}) = Feature(int64_list=Int64List(value=f))
+make_feature(f::Array{Float32, 1}) = Feature(float_list=FloatList(value=f))
+build_example(d::Dict{T, Array{U, 1}} where {T<:AbstractString, U} ) = Example(features=Features(feature=Dict{AbstractString, Feature}(k => make_feature(v) for (k, v) in d)))
 
 end
