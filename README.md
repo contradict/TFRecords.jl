@@ -18,14 +18,14 @@ for the gory details.
     julia> records = Iterators.Stateful(tfrecord_file)
     julia> record = popfirst!(records)
 
-For convenience, `parseexample` will turn the `Example` structure into a
+For convenience, `parse_example` will turn the `Example` structure into a
 `Dict{String, Array{T, 1}}` for.
 
-    julia> record_dict = parseexample(record)
+    julia> record_dict = parse_example(record)
 
 ## Write
 
     julia> output_file = open("filename.tfrecord")
-    julia> e = buildexample(Dict("value" => Array{Int64, 1}([1])))
+    julia> e = build_example(Dict("value" => Array{Int64, 1}([1])))
     julia> writeexample(outputfile, e)
 
