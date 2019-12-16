@@ -117,9 +117,18 @@ function parse_example(e::Example)
     Dict(k=>woo(e.features.feature[k]) for k in defined_keys)
 end
 
+
 make_feature(f::Array{Array{UInt8, 1},1}) = Feature(bytes_list=BytesList(value=f))
 make_feature(f::Array{Int64, 1}) = Feature(int64_list=Int64List(value=f))
 make_feature(f::Array{Float32, 1}) = Feature(float_list=FloatList(value=f))
-build_example(d::Dict{T, Array{U, 1}} where {T<:AbstractString, U} ) = Example(features=Features(feature=Dict{AbstractString, Feature}(k => make_feature(v) for (k, v) in d)))
+PossibleFeatureType = Union{Int64, Float32, Array{UInt8, 1}}
+
+"""
+    build_example(d)
+
+Convert a dict like the one returned by parse_example into an Example for
+serialization to a file
+"""
+build_example(d::Dict{T, Array{U, 1}} where {T<:AbstractString, U<:PossibleFeatureType}) = Example(features=Features(feature=Dict{AbstractString, Feature}(k => make_feature(v) for (k, v) in d)))
 
 end
